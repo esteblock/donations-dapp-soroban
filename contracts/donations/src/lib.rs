@@ -1,12 +1,10 @@
 #![no_std]
-#![no_std]
 use soroban_sdk::{
-    contract, contractimpl, Env, Address, Val, TryFromVal, ConversionError
+    contract, contractimpl, Env, Address, Val, TryFromVal, ConversionError, token
 };
 
-
-
 #[derive(Clone, Copy)]
+// Data Keys
 pub enum DataKey {
     AcceptedToken = 0,        // address of the accepted token
     DonationsRecipient =1,       // address of the donations recipient
@@ -20,8 +18,7 @@ impl TryFromVal<Env, DataKey> for Val {
     }
 }
 
-
-
+// Helper functions
 fn put_token_address(e: &Env, token: &Address) {
     e.storage().instance().set(&DataKey::AcceptedToken, token);
 }
@@ -44,12 +41,26 @@ fn get_donations_recipient(e: &Env) -> Address {
         .expect("not DonationsRecipient")
 }
 
+fn get_balance(e: &Env, token_address: &Address) -> i128 {
+    let client = token::Client::new(e, token_address);
+    client.balance(&e.current_contract_address())
+}
+
+// Transfer tokens from the contract to the recipient
+fn transfer(e: &Env, to: &Address, amount: &i128) {
+    let token_contract_address= &get_token_address(e);
+    let client = token::Client::new(e, token_contract_address);
+    client.transfer(&e.current_contract_address(), to, amount);
+}
+
+
+// Contract Trait
 pub trait DonationsTrait {
     // Sets the recepient address and the token that will be accepted as donation
     fn initialize(e: Env, recipient: Address, token: Address);
 
     // Donates amount units of the accepted token
-    fn donate(e: Env, amount: i128);
+    fn donate(e: Env, donor: Address, amount: i128);
 
     // Transfer all the accumulated donations to the recipient. Can be called by anyone
     fn withdraw(e: Env);
@@ -64,6 +75,7 @@ pub trait DonationsTrait {
 #[contract]
 struct Donations;
 
+// Contract implementation
 #[contractimpl]
 impl DonationsTrait for Donations {
 
@@ -78,10 +90,21 @@ impl DonationsTrait for Donations {
     }
 
     // Donates amount units of the accepted token
-    fn donate(e: Env, amount: i128){}
+    fn donate(e: Env, donor: Address, amount: i128){
+        donor.require_auth();
+        assert!(amount > 0, "amount must be positive");
+        let token_address = get_token_address(&e);
+        let client = token::Client::new(&e, &token_address); 
+        // Transfer from user to this contract
+        client.transfer(&donor, &e.current_contract_address(), &amount);
+    }
 
     // Transfer all the accumulated donations to the recipient. Can be called by anyone
-    fn withdraw(e: Env){}
+    fn withdraw(e: Env){
+        let token = get_token_address(&e);
+        let recipient = get_donations_recipient(&e);
+        transfer(&e, &recipient, &get_balance(&e, &token));
+    }
 
     // Get the token address that is accepted as donations
     fn token(e:Env) -> Address{
