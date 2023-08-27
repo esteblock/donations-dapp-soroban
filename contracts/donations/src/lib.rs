@@ -2,6 +2,7 @@
 use soroban_sdk::{
     contract, contractimpl, Env, Address, Val, TryFromVal, ConversionError, token
 };
+mod test;
 
 #[derive(Clone, Copy)]
 // Data Keys
@@ -37,8 +38,8 @@ fn get_token_address(e: &Env) -> Address {
 fn get_donations_recipient(e: &Env) -> Address {
     e.storage()
         .instance()
-        .get(&DataKey::AcceptedToken)
-        .expect("not DonationsRecipient")
+        .get(&DataKey::DonationsRecipient)
+        .expect("not initialized")
 }
 
 fn get_balance(e: &Env, token_address: &Address) -> i128 {
@@ -89,7 +90,7 @@ impl DonationsTrait for Donations {
         put_donations_recipient(&e, &recipient);
     }
 
-    // Donates amount units of the accepted token
+    // Donor donates amount units of the accepted token
     fn donate(e: Env, donor: Address, amount: i128){
         donor.require_auth();
         assert!(amount > 0, "amount must be positive");
