@@ -100,9 +100,20 @@ echo "---"
 
 echo Checking initial balance of the donations contract
 soroban contract invoke   --network standalone --source-account my-account  --id "$TOKEN_ADDRESS"   --   balance   --id $DONATIONS_ID
-node /workspace/getInfoXLM.js $DONATIONS_ID
+# node /workspace/getInfoXLM.js $DONATIONS_ID
 echo "---"
-
+echo "---"
+echo "---"
+echo "---"
+echo THE FIRST CALL TO THE CONTRACT WILL FAIL... WHY????
+echo Donor donates 5 stroops to the contract
+soroban contract invoke   --network standalone \
+        --source-account donor  --id "$DONATIONS_ID" --fee 1000000 \
+        --   donate   --donor $DONOR   --amount 5
+echo "---"
+echo "---"
+echo "---"
+echo "---"
 
 echo Donor donates 5 stroops to the contract
 soroban contract invoke   --network standalone \
@@ -111,7 +122,6 @@ soroban contract invoke   --network standalone \
 
 echo Checking new balance of the donations contract ... should be 5 ...
 soroban contract invoke   --network standalone --source-account my-account  --id "$TOKEN_ADDRESS"   --   balance   --id $DONATIONS_ID
-node /workspace/getInfoXLM.js $DONATIONS_ID
 echo "---"
 
 
@@ -122,7 +132,6 @@ soroban contract invoke   --network standalone \
 
 echo Checking new balance of the donations contract ... should be 12 ...
 soroban contract invoke   --network standalone --source-account my-account  --id "$TOKEN_ADDRESS"   --   balance   --id $DONATIONS_ID
-node /workspace/getInfoXLM.js $DONATIONS_ID
 echo "---"
 
 echo Recipient withdraw the total balance inside the donations contract
@@ -137,5 +146,4 @@ echo "---"
 
 echo Checking final balance of donations contract ... should be 0 ...
 soroban contract invoke   --network standalone --source-account my-account  --id "$TOKEN_ADDRESS"   --   balance   --id $DONATIONS_ID
-node /workspace/getInfoXLM.js $DONATIONS_ID
 echo "---"
