@@ -1,0 +1,10 @@
+{
+  "name": "donations",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "dependencies": {
+    "stellar-sdk": "^10.4.1"
+  },
+  "type": "module"
+}

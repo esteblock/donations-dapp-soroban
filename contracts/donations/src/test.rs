@@ -1,9 +1,10 @@
 #![cfg(test)]
 
 extern crate std;
+use stellar_strkey::Strkey;
 // use soroban_sdk::testutils::{register_test_contract as register_donation, Donation};
 use soroban_sdk::{ testutils::{Address as AddressTestTrait},
-    token, Address, Env, Bytes
+    token, Address, Env, Bytes, BytesN
 };
 use soroban_sdk::xdr::{Asset, ContractIdPreimage, WriteXdr};
 use token::AdminClient as TokenAdminClient;
@@ -52,12 +53,13 @@ fn test_native() {
     let _donor = Address::random(&e);
     
     // Set the native token address
-    // TODO: Test the address. Not not working
-    // Check this: https://discord.com/channels/897514728459468821/1145458616086843423/1145458616086843423
-    let native_address =native_asset_contract_address(&e);
-    //let expected_address_string="CDF3YSDVBXV3QU2QSOZ55L4IVR7UZ74HIJKXNJMN4K5MOVFM3NDBNMLY";
-    //assert_eq!(native_address, expected_address_string);
-    
+    let native_address =native_asset_contract_address(&e);    
+    let expected_address_string = "CDF3YSDVBXV3QU2QSOZ55L4IVR7UZ74HIJKXNJMN4K5MOVFM3NDBNMLY";
+    let Strkey::Contract(array) = Strkey::from_string(expected_address_string).unwrap() else { panic!("Failed to convert address") };
+    let contract_id = BytesN::from_array(&e, &array.0);
+    let expected_asset_address = Address::from_contract_id(&contract_id);
+    assert_eq!(native_address, expected_asset_address);
+
 
     // Deploy the donations contract with the recipient and the native address
     let donations = create_donations_contract(&e, &recipient, &native_address);

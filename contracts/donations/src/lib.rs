@@ -93,7 +93,7 @@ impl DonationsTrait for Donations {
     // Donor donates amount units of the accepted token
     fn donate(e: Env, donor: Address, amount: i128){
         donor.require_auth();
-        assert!(amount > 0, "amount must be positive");
+        //assert!(amount > 0, "amount must be positive");
         let token_address = get_token_address(&e);
         let client = token::Client::new(&e, &token_address); 
         // Transfer from user to this contract

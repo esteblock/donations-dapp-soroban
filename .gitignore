@@ -1,6 +1,7 @@
 */Cargo.lock
 contracts/*/target
 /target/
+.soroban
 
 
 # Logs
